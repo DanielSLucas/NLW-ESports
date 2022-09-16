@@ -6,17 +6,19 @@ import { Entypo } from '@expo/vector-icons';
 import { GameParams } from '../../@types/navigation';
 import logoImg from '../../assets/logo-nlw-esports.png';
 
+import { DuoCard, DuoCardProps } from '../../components/DuoCard';
 import { Background } from '../../components/Background';
+import { Heading } from '../../components/Heading';
+import { DuoMatch } from '../../components/DuoMatch';
 
 import { styles } from './styles';
 import { THEME } from '../../theme';
-import { Heading } from '../../components/Heading';
 import { useEffect, useState } from 'react';
-import { DuoCard, DuoCardProps } from '../../components/DuoCard';
 
 
 export function Game() {
   const [duos, setDuos] = useState<DuoCardProps[]>([]);
+  const [discordDuoSelected, setDiscordDuoSelected] = useState('');
 
   const navigation = useNavigation()
   const route = useRoute();
@@ -26,8 +28,14 @@ export function Game() {
     navigation.goBack();
   }
 
+  async function getDiscordUser(adsId: string) {
+    fetch(`https://3587-179-97-66-241.ngrok.io/ads/${adsId}/discord`)
+      .then(response => response.json())
+      .then(data => setDiscordDuoSelected(data.discord));
+  }
+
   useEffect(() => {
-    fetch(`http://192.168.136.8:3333/games/${id}/ads`)
+    fetch(`https://3587-179-97-66-241.ngrok.io/games/${id}/ads`)
       .then(response => response.json())
       .then(data => setDuos(data));
   }, []);
@@ -68,7 +76,7 @@ export function Game() {
           renderItem={({ item }) => (
             <DuoCard 
               data={item}
-              onConnect={() => { }}
+              onConnect={() => getDiscordUser(item.id)}
             />
           )}
           horizontal
@@ -80,6 +88,11 @@ export function Game() {
               Não há anuncios publicados ainda.
             </Text>
           )}
+        />
+        <DuoMatch 
+          visible={discordDuoSelected.length > 0}
+          discord={discordDuoSelected}
+          onClose={() => setDiscordDuoSelected('')}
         />
       </SafeAreaView>
     </Background>    
